@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { fetchLoans, insertLoan, updateLoan, deleteLoan, setPaid } from './supabase'
 import { parseDMY, toISO, fmt, fmt2, pctOf, parseNum } from './helpers'
 import AppHeader from './components/AppHeader.vue'
@@ -24,21 +24,10 @@ const start = ref('')
 const end = ref('')
 const loadError = ref('')
 const saving = ref(false)
-const isMobile = ref(false) // จอ ≤ 560px → แสดงเฉพาะฟอร์มกรอกข้อมูล
 const form = reactive({ borrowDate: '', name: '', loan: '', pct: '', returnDate: '', paid: false })
-
-let mq = null
-const onMqChange = (e) => {
-  isMobile.value = e.matches
-  if (e.matches && !showForm.value) openNew() // สลับมามือถือ → เปิดฟอร์มให้
-}
 
 // ---- โหลดຂໍ້ມູນຄັ້ງທຳອິດ ----
 onMounted(async () => {
-  mq = window.matchMedia('(max-width: 560px)')
-  isMobile.value = mq.matches
-  mq.addEventListener('change', onMqChange)
-  if (isMobile.value) openNew() // มือถือ: โชว์ฟอร์มทันที · เดสก์ท็อป: โชว์แดชบอร์ด (ไม่เด้งฟอร์ม)
   try {
     entries.value = await fetchLoans()
   } catch (e) {
@@ -46,10 +35,6 @@ onMounted(async () => {
     loadError.value = 'Supabase: ' + (e?.message || e)
     entries.value = []
   }
-})
-
-onBeforeUnmount(() => {
-  mq?.removeEventListener('change', onMqChange)
 })
 
 // ---- actions ----
@@ -84,10 +69,6 @@ function openEdit(e) {
 }
 
 function closeForm() {
-  if (isMobile.value) {
-    openNew() // มือถือ: ไม่มีหน้าอื่นให้กลับ → เคลียร์ฟอร์มสำหรับกรอกรายการใหม่
-    return
-  }
   showForm.value = false
   editId.value = null
 }
@@ -117,12 +98,8 @@ async function saveForm() {
       const saved = await insertLoan(rec)
       entries.value = [...entries.value, saved]
     }
-    if (isMobile.value) {
-      openNew() // มือถือ: เปิดฟอร์มเปล่าต่อสำหรับรายการถัดไป
-    } else {
-      showForm.value = false
-      editId.value = null
-    }
+    showForm.value = false
+    editId.value = null
   } catch (e) {
     console.error(e)
     alert('ບັນທຶກບໍ່ໄດ້: ' + (e?.message || e))
@@ -290,9 +267,9 @@ function editById(id) {
     >
       {{ loadError }}
     </div>
-    <AppHeader v-if="!isMobile" :vals="vals" />
+    <AppHeader :vals="vals" />
 
-    <div v-if="!isMobile" style="max-width:1240px;margin:22px auto 0;padding:0 40px">
+    <div style="max-width:1240px;margin:22px auto 0;padding:0 40px">
       <Toolbar
         :vals="vals"
         @show-all="showAll"
@@ -325,7 +302,7 @@ function editById(id) {
     </div>
 
     <FormModal
-      v-if="showForm || isMobile"
+      v-if="showForm"
       :vals="vals"
       :form="form"
       :title="title"
