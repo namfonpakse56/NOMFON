@@ -1,5 +1,6 @@
 <script setup>
 import DateField from './DateField.vue'
+import Icon from './Icon.vue'
 
 defineProps({
   vals: { type: Object, required: true },
@@ -32,7 +33,7 @@ const LABEL_SPAN = 'display:block;font-size:12px;font-weight:600;color:#54534c;m
     >
       <div class="fm-head" style="padding:20px 26px;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:space-between">
         <div style="font-size:17px;font-weight:800">{{ title }}</div>
-        <button style="border:none;background:#f1efe8;width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:15px" @click="$emit('close')">✕</button>
+        <button style="border:none;background:#f1efe8;width:32px;height:32px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#54534c" @click="$emit('close')"><Icon name="x" :size="16" /></button>
       </div>
 
       <div class="fm-body" style="padding:22px 26px;display:flex;flex-direction:column;gap:16px">

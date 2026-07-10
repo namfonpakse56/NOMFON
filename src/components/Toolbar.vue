@@ -1,4 +1,5 @@
 <script setup>
+import Icon from './Icon.vue'
 defineProps({ vals: { type: Object, required: true } })
 defineEmits(['show-all', 'show-by-name', 'open-new'])
 
@@ -19,10 +20,10 @@ const TAB_OFF = TAB_BASE + 'background:transparent;color:#6b6a62;'
         ທັງໝົດ {{ vals.countStr }} ລາຍການ · ຄ້າງຈ່າຍ {{ vals.pendingStr }}
       </div>
       <button
-        :style="'color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(31,107,76,.28);background:' + vals.accent"
+        :style="'color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(31,107,76,.28);display:inline-flex;align-items:center;gap:6px;background:' + vals.accent"
         @click="$emit('open-new')"
       >
-        + ເພີ່ມລາຍການກູ້
+        <Icon name="plus" :size="16" /> ເພີ່ມລາຍການກູ້
       </button>
     </div>
   </div>

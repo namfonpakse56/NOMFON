@@ -1,4 +1,5 @@
 <script setup>
+import Icon from './Icon.vue'
 defineProps({
   vals: { type: Object, required: true },
   start: { type: String, default: '' },
@@ -32,10 +33,10 @@ const DATE_INPUT =
       <button :style="QUICK_BTN" @click="$emit('year')">ລາຍປີ</button>
       <button
         v-if="vals.isFiltered"
-        style="border:1px solid rgba(179,73,47,.3);background:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;color:#b3492f"
+        style="border:1px solid rgba(179,73,47,.3);background:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;color:#b3492f;display:inline-flex;align-items:center;gap:5px"
         @click="$emit('clear')"
       >
-        ລ້າງ ✕
+        ລ້າງ <Icon name="x" :size="13" />
       </button>
     </div>
   </div>

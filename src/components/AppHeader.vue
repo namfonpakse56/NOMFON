@@ -1,4 +1,5 @@
 <script setup>
+import Icon from './Icon.vue'
 defineProps({ vals: { type: Object, required: true } })
 </script>
 
@@ -16,15 +17,15 @@ defineProps({ vals: { type: Object, required: true } })
       </div>
       <div style="display:flex;gap:14px;flex-wrap:wrap">
         <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 18px;min-width:150px">
-          <div style="font-size:11px;color:#a9b6ac;font-weight:600;margin-bottom:4px">ຍອດປ່ອຍກູ້</div>
+          <div style="font-size:11px;color:#a9b6ac;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:5px"><Icon name="banknote" :size="13" />ຍອດປ່ອຍກູ້</div>
           <div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ vals.sumLoanStr }}</div>
         </div>
         <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:12px 18px;min-width:150px">
-          <div style="font-size:11px;color:#a9b6ac;font-weight:600;margin-bottom:4px">ຍອດຕ້ອງຮັບຄືນ</div>
+          <div style="font-size:11px;color:#a9b6ac;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:5px"><Icon name="rotate" :size="13" />ຍອດຕ້ອງຮັບຄືນ</div>
           <div style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ vals.sumReturnStr }}</div>
         </div>
         <div :style="'border-radius:14px;padding:12px 18px;min-width:150px;background:' + vals.accent">
-          <div style="font-size:11px;color:rgba(255,255,255,.85);font-weight:600;margin-bottom:4px">ກຳໄລ (ດອກເບ້ຍ)</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.85);font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:5px"><Icon name="trending" :size="13" />ກຳໄລ (ດອກເບ້ຍ)</div>
           <div style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff">{{ vals.sumProfitStr }}</div>
         </div>
       </div>

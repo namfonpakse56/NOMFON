@@ -8,6 +8,7 @@ import DateFilter from './components/DateFilter.vue'
 import CombinedTable from './components/CombinedTable.vue'
 import ByNameView from './components/ByNameView.vue'
 import FormModal from './components/FormModal.vue'
+import Icon from './components/Icon.vue'
 
 const props = defineProps({
   accentColor: { type: String, default: '#1f6b4c' },
@@ -318,9 +319,9 @@ function editById(id) {
   <div style="min-height:100vh;padding:0 0 80px">
     <div
       v-if="toast"
-      :style="'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:60;color:#fff;padding:13px 24px;border-radius:999px;font-size:14px;font-weight:800;white-space:nowrap;border:2px solid rgba(255,255,255,.92);box-shadow:0 12px 34px rgba(0,0,0,.42);animation:pop .2s ease;background:' + vals.accent"
+      :style="'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:60;color:#fff;padding:13px 24px;border-radius:999px;font-size:14px;font-weight:800;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;border:2px solid rgba(255,255,255,.92);box-shadow:0 12px 34px rgba(0,0,0,.42);animation:pop .2s ease;background:' + vals.accent"
     >
-      ✓ {{ toast }}
+      <Icon name="check" :size="17" /> {{ toast }}
     </div>
 
     <!-- แจ้งเตือนครบกำหนดคืนเงิน (มือถือ) -->
@@ -333,8 +334,8 @@ function editById(id) {
         style="background:#fff;border-radius:18px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.4)"
         @click.stop
       >
-        <div style="background:#c0392b;color:#fff;padding:16px 20px;font-size:15.5px;font-weight:800">
-          ⚠️ ແຈ້ງເຕືອນ · ຄົບກຳນົດຄืນເງິນ ({{ dueList.length }})
+        <div style="background:#c0392b;color:#fff;padding:16px 20px;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:8px">
+          <Icon name="calendar" :size="18" /> ແຈ້ງເຕືອນ · ຄົບກຳນົດຄืນເງິນ ({{ dueList.length }})
         </div>
         <div style="padding:6px 8px;max-height:52vh;overflow-y:auto">
           <div

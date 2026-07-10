@@ -1,11 +1,12 @@
 <script setup>
+import Icon from './Icon.vue'
 defineProps({ vals: { type: Object, required: true } })
 defineEmits(['name', 'edit', 'delete', 'toggle'])
 
 const TH_L = 'text-align:left;padding:13px 16px;font-size:11.5px;font-weight:700;color:#54534c;letter-spacing:.4px'
 const TH_R = 'text-align:right;padding:13px 16px;font-size:11.5px;font-weight:700;color:#54534c;letter-spacing:.4px'
 const TH_C = 'text-align:center;padding:13px 12px;font-size:11.5px;font-weight:700;color:#54534c;letter-spacing:.4px'
-const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px'
+const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center'
 </script>
 
 <template>
@@ -46,9 +47,9 @@ const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radi
             </td>
             <td style="padding:10px 16px;text-align:right;white-space:nowrap">
               <div style="display:inline-flex;gap:6px">
-                <button :style="ACTION_BTN + ';color:#1f6b4c'" title="ສະຫຼັບສະຖານະ" @click="$emit('toggle', row.id)">✓</button>
-                <button :style="ACTION_BTN + ';font-size:13px'" title="ແກ້ໄຂ" @click="$emit('edit', row.id)">✎</button>
-                <button style="border:1px solid rgba(179,73,47,.25);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;color:#b3492f" title="ລຶບ" @click="$emit('delete', row.id)">✕</button>
+                <button :style="ACTION_BTN + ';color:#1f6b4c'" title="ສະຫຼັບສະຖານະ" @click="$emit('toggle', row.id)"><Icon name="check" :size="15" /></button>
+                <button :style="ACTION_BTN + ';font-size:13px'" title="ແກ້ໄຂ" @click="$emit('edit', row.id)"><Icon name="edit" :size="15" /></button>
+                <button style="border:1px solid rgba(179,73,47,.25);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#b3492f" title="ລຶບ" @click="$emit('delete', row.id)"><Icon name="trash" :size="15" /></button>
               </div>
             </td>
           </tr>
