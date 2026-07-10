@@ -1,0 +1,46 @@
+# Build แอป Vite แล้ว deploy ขึ้น GitHub Pages อัตโนมัติทุกครั้งที่ push เข้า main
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # กดรันเองได้จากแท็บ Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          # คีย์ Supabase แบบ publishable ออกแบบมาให้เปิดเผยในฝั่ง client อยู่แล้ว
+          # (ถูกฝังในไฟล์ build เสมอ) จึงใส่ตรงนี้ได้ — ความปลอดภัยขึ้นกับ RLS
+          VITE_SUPABASE_URL: https://ghwutrjghcffqqnxhxtf.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_8FyoQQWuok00Yqo6cTK5xw_oc4dFEBG
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
