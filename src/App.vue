@@ -30,6 +30,7 @@ const form = reactive({ borrowDate: '', name: '', loan: '', pct: '', returnDate:
 let mq = null
 const onMqChange = (e) => {
   isMobile.value = e.matches
+  if (e.matches && !showForm.value) openNew() // สลับมามือถือ → เปิดฟอร์มให้
 }
 
 // ---- โหลดຂໍ້ມູນຄັ້ງທຳອິດ ----
@@ -37,7 +38,7 @@ onMounted(async () => {
   mq = window.matchMedia('(max-width: 560px)')
   isMobile.value = mq.matches
   mq.addEventListener('change', onMqChange)
-  openNew() // เปิดแอปแล้วโชว์ฟอร์มเพิ่มรายการทันที
+  if (isMobile.value) openNew() // มือถือ: โชว์ฟอร์มทันที · เดสก์ท็อป: โชว์แดชบอร์ด (ไม่เด้งฟอร์ม)
   try {
     entries.value = await fetchLoans()
   } catch (e) {
