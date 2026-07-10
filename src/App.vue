@@ -287,6 +287,28 @@ const vals = computed(() => {
 
 const title = computed(() => (editId.value ? 'ແກ້ໄຂລາຍການກູ້' : 'ເພີ່ມລາຍການກູ້ໃໝ່'))
 
+// แจ้งเตือนรายการที่ถึง/เลยกำหนดคืนเงิน และยังไม่จ่าย
+const dueAlertDismissed = ref(false)
+const dueList = computed(() => {
+  const endToday = new Date()
+  endToday.setHours(23, 59, 59, 999)
+  const startToday = new Date()
+  startToday.setHours(0, 0, 0, 0)
+  return (entries.value || [])
+    .filter((e) => {
+      if (e.paid) return false
+      const d = parseDMY(e.returnDate)
+      return d && d <= endToday // ถึงกำหนดวันนี้หรือเลยกำหนด
+    })
+    .map((e) => ({
+      id: e.id,
+      name: e.name,
+      returnDate: e.returnDate,
+      payStr: fmt(e.pay),
+      overdue: parseDMY(e.returnDate) < startToday, // เลยกำหนด (ก่อนวันนี้)
+    }))
+})
+
 function editById(id) {
   openEdit(entries.value.find((e) => e.id === id))
 }
@@ -300,6 +322,45 @@ function editById(id) {
     >
       ✓ {{ toast }}
     </div>
+
+    <!-- แจ้งเตือนครบกำหนดคืนเงิน (มือถือ) -->
+    <div
+      v-if="isMobile && dueList.length && !dueAlertDismissed"
+      style="position:fixed;inset:0;z-index:70;background:rgba(20,25,20,.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px"
+      @click="dueAlertDismissed = true"
+    >
+      <div
+        style="background:#fff;border-radius:18px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.4)"
+        @click.stop
+      >
+        <div style="background:#c0392b;color:#fff;padding:16px 20px;font-size:15.5px;font-weight:800">
+          🔔 ແຈ້ງເຕືອນ · ຄົບກຳນົດຄืນເງິນ ({{ dueList.length }})
+        </div>
+        <div style="padding:6px 8px;max-height:52vh;overflow-y:auto">
+          <div
+            v-for="e in dueList"
+            :key="e.id"
+            style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(0,0,0,.06)"
+          >
+            <div>
+              <div style="font-weight:700;font-size:14.5px">{{ e.name }}</div>
+              <div v-if="e.overdue" style="font-size:12px;color:#b0281a;font-weight:700">ເລີຍກຳນົດ · {{ e.returnDate }}</div>
+              <div v-else style="font-size:12px;color:#8a6d1c;font-weight:700">ຄົບກຳນົດມື້ນີ້ · {{ e.returnDate }}</div>
+            </div>
+            <div style="font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap">{{ e.payStr }} ກີບ</div>
+          </div>
+        </div>
+        <div style="padding:14px 20px;background:#f8f6f0;display:flex;justify-content:flex-end">
+          <button
+            :style="'border:none;color:#fff;border-radius:10px;padding:10px 24px;font-size:14px;font-weight:700;cursor:pointer;background:' + vals.accent"
+            @click="dueAlertDismissed = true"
+          >
+            ຮັບຊາບ
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div
       v-if="loadError"
       style="max-width:1240px;margin:12px auto 0;padding:12px 40px;color:#b91c1c;font-weight:600;font-size:13.5px"
