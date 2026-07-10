@@ -334,7 +334,7 @@ function editById(id) {
         @click.stop
       >
         <div style="background:#c0392b;color:#fff;padding:16px 20px;font-size:15.5px;font-weight:800">
-          🔔 ແຈ້ງເຕືອນ · ຄົບກຳນົດຄืນເງິນ ({{ dueList.length }})
+          ⚠️ ແຈ້ງເຕືອນ · ຄົບກຳນົດຄืນເງິນ ({{ dueList.length }})
         </div>
         <div style="padding:6px 8px;max-height:52vh;overflow-y:auto">
           <div
