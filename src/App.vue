@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { fetchLoans, insertLoan, updateLoan, deleteLoan, setPaid } from './supabase'
 import { parseDMY, toISO, fmt, fmt2, pctOf, parseNum } from './helpers'
 import AppHeader from './components/AppHeader.vue'
@@ -24,10 +24,29 @@ const start = ref('')
 const end = ref('')
 const loadError = ref('')
 const saving = ref(false)
+const isMobile = ref(false) // จอ ≤ 560px → แสดงเฉพาะฟอร์มกรอกข้อมูล
+const toast = ref('') // ข้อความแจ้งเตือนชั่วคราว
+let toastTimer = null
 const form = reactive({ borrowDate: '', name: '', loan: '', pct: '', returnDate: '', paid: false })
+
+let mq = null
+const onMqChange = (e) => {
+  isMobile.value = e.matches
+  if (e.matches && !showForm.value) openNew() // สลับมามือถือ → เปิดฟอร์มให้
+}
+
+function showToast(msg) {
+  toast.value = msg
+  if (toastTimer) clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => (toast.value = ''), 2200)
+}
 
 // ---- โหลดຂໍ້ມູນຄັ້ງທຳອິດ ----
 onMounted(async () => {
+  mq = window.matchMedia('(max-width: 560px)')
+  isMobile.value = mq.matches
+  mq.addEventListener('change', onMqChange)
+  if (isMobile.value) openNew() // มือถือ: โชว์ฟอร์มทันที · เดสก์ท็อป: โชว์แดชบอร์ด
   try {
     entries.value = await fetchLoans()
   } catch (e) {
@@ -35,6 +54,11 @@ onMounted(async () => {
     loadError.value = 'Supabase: ' + (e?.message || e)
     entries.value = []
   }
+})
+
+onBeforeUnmount(() => {
+  mq?.removeEventListener('change', onMqChange)
+  if (toastTimer) clearTimeout(toastTimer)
 })
 
 // ---- actions ----
@@ -69,6 +93,10 @@ function openEdit(e) {
 }
 
 function closeForm() {
+  if (isMobile.value) {
+    openNew() // มือถือ: ไม่มีหน้าอื่นให้กลับ → เคลียร์ฟอร์มสำหรับกรอกรายการใหม่
+    return
+  }
   showForm.value = false
   editId.value = null
 }
@@ -98,8 +126,13 @@ async function saveForm() {
       const saved = await insertLoan(rec)
       entries.value = [...entries.value, saved]
     }
-    showForm.value = false
-    editId.value = null
+    showToast('ບັນທຶກຂໍ້ມູນສຳເລັດ')
+    if (isMobile.value) {
+      openNew() // มือถือ: เปิดฟอร์มเปล่าต่อสำหรับรายการถัดไป
+    } else {
+      showForm.value = false
+      editId.value = null
+    }
   } catch (e) {
     console.error(e)
     alert('ບັນທຶກບໍ່ໄດ້: ' + (e?.message || e))
@@ -262,14 +295,20 @@ function editById(id) {
 <template>
   <div style="min-height:100vh;padding:0 0 80px">
     <div
+      v-if="toast"
+      :style="'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:60;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.28);animation:pop .2s ease;background:' + vals.accent"
+    >
+      ✓ {{ toast }}
+    </div>
+    <div
       v-if="loadError"
       style="max-width:1240px;margin:12px auto 0;padding:12px 40px;color:#b91c1c;font-weight:600;font-size:13.5px"
     >
       {{ loadError }}
     </div>
-    <AppHeader :vals="vals" />
+    <AppHeader v-if="!isMobile" :vals="vals" />
 
-    <div style="max-width:1240px;margin:22px auto 0;padding:0 40px">
+    <div v-if="!isMobile" style="max-width:1240px;margin:22px auto 0;padding:0 40px">
       <Toolbar
         :vals="vals"
         @show-all="showAll"
@@ -302,7 +341,7 @@ function editById(id) {
     </div>
 
     <FormModal
-      v-if="showForm"
+      v-if="showForm || isMobile"
       :vals="vals"
       :form="form"
       :title="title"
