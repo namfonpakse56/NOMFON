@@ -296,7 +296,7 @@ function editById(id) {
   <div style="min-height:100vh;padding:0 0 80px">
     <div
       v-if="toast"
-      :style="'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:60;color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.28);animation:pop .2s ease;background:' + vals.accent"
+      :style="'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:60;color:#fff;padding:13px 24px;border-radius:999px;font-size:14px;font-weight:800;white-space:nowrap;border:2px solid rgba(255,255,255,.92);box-shadow:0 12px 34px rgba(0,0,0,.42);animation:pop .2s ease;background:' + vals.accent"
     >
       ✓ {{ toast }}
     </div>
