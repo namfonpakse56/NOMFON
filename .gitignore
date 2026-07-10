@@ -6,3 +6,7 @@ dist-ssr
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# ไฟล์ทดสอบ/ชั่วคราว
+.playwright-mcp/
+*.png
