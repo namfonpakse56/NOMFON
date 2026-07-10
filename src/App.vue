@@ -33,7 +33,6 @@ const form = reactive({ borrowDate: '', name: '', loan: '', pct: '', returnDate:
 let mq = null
 const onMqChange = (e) => {
   isMobile.value = e.matches
-  if (e.matches && !showForm.value) openNew() // สลับมามือถือ → เปิดฟอร์มให้
 }
 
 function showToast(msg) {
@@ -47,7 +46,6 @@ onMounted(async () => {
   mq = window.matchMedia('(max-width: 560px)')
   isMobile.value = mq.matches
   mq.addEventListener('change', onMqChange)
-  if (isMobile.value) openNew() // มือถือ: โชว์ฟอร์มทันที · เดสก์ท็อป: โชว์แดชบอร์ด
   try {
     entries.value = await fetchLoans()
   } catch (e) {
@@ -94,10 +92,6 @@ function openEdit(e) {
 }
 
 function closeForm() {
-  if (isMobile.value) {
-    openNew() // มือถือ: ไม่มีหน้าอื่นให้กลับ → เคลียร์ฟอร์มสำหรับกรอกรายการใหม่
-    return
-  }
   showForm.value = false
   editId.value = null
 }
@@ -128,12 +122,8 @@ async function saveForm() {
       entries.value = [...entries.value, saved]
     }
     showToast('ບັນທຶກຂໍ້ມູນສຳເລັດ')
-    if (isMobile.value) {
-      openNew() // มือถือ: เปิดฟอร์มเปล่าต่อสำหรับรายการถัดไป
-    } else {
-      showForm.value = false
-      editId.value = null
-    }
+    showForm.value = false
+    editId.value = null
   } catch (e) {
     console.error(e)
     alert('ບັນທຶກບໍ່ໄດ້: ' + (e?.message || e))
@@ -368,9 +358,9 @@ function editById(id) {
     >
       {{ loadError }}
     </div>
-    <AppHeader v-if="!isMobile" :vals="vals" />
+    <AppHeader class="dash-header" :vals="vals" />
 
-    <div v-if="!isMobile" style="max-width:1240px;margin:22px auto 0;padding:0 40px">
+    <div class="dash-wrap" style="max-width:1240px;margin:22px auto 0;padding:0 40px">
       <Toolbar
         :vals="vals"
         @show-all="showAll"
@@ -403,7 +393,7 @@ function editById(id) {
     </div>
 
     <FormModal
-      v-if="showForm || isMobile"
+      v-if="showForm"
       :vals="vals"
       :form="form"
       :title="title"
@@ -413,3 +403,17 @@ function editById(id) {
     />
   </div>
 </template>
+
+<style>
+/* ลดขอบซ้าย-ขวาบนมือถือ ให้แดชบอร์ด/ตารางพอดีจอมากขึ้น (จอ ≤ 560px) */
+@media (max-width: 560px) {
+  .dash-header {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .dash-wrap {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+</style>
