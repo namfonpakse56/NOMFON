@@ -45,10 +45,25 @@ export function parseNum(str) {
   return parseFloat(String(str).replace(/[^0-9.]/g, '')) || 0
 }
 
+// ປັດຂຶ້ນ (ceil) ໄປຫາທະວີຄູນຂອງ 500 ກີບ ສະເໝີ
+// ເສດ < 500 → ຂຶ້ນເປັນ 500 (85,300 → 85,500); ເສດ > 500 → ຂຶ້ນເປັນ 1,000 (85,714 → 86,000)
+export function roundKip(n, step = 500) {
+  return Math.ceil((Number(n) || 0) / step) * step
+}
+
 // "6/7/26" (D/M/YY) -> "2026-07-06" (ISO ສຳລັບ input[type=date]); "" ຖ້າແປງບໍ່ໄດ້
 export function dmyToISO(dmy) {
   const d = parseDMY(dmy)
   return d ? toISO(d) : ''
+}
+
+// ນັບຈຳນວນວັນລະຫວ່າງ 2 ວັນທີ່ (D/M/YY) — ຄืน 0 ຖ້າແປງບໍ່ໄດ້ ຫຼື ≤ 0
+export function daysBetween(startDmy, endDmy) {
+  const s = parseDMY(startDmy)
+  const e = parseDMY(endDmy)
+  if (!s || !e) return 0
+  const n = Math.round((e - s) / 86400000)
+  return n > 0 ? n : 0
 }
 
 // "2026-07-06" (ISO) -> "6/7/26" (D/M/YY); "" ຖ້າຫວ່າງ

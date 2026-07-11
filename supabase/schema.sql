@@ -68,6 +68,58 @@ group by name
 order by loan_count desc;
 
 -- ============================================================================
+--  ตาราง daily_loans = 1 แถว/1 แผนผ่อนรายวัน (จ่ายทีละวัน)
+-- ----------------------------------------------------------------------------
+--  โมเดล: กรอก เงินต้น(loan) + % → ยอดรวมที่ต้องรับคืน(pay); กำหนดวันเริ่ม+วันคืน
+--         → ระบบคำนวณ days และ ยอดจ่าย/วัน(daily_amount) ให้อัตโนมัติ
+--  ติดตามการจ่ายทีละวันด้วย paid_days = อาเรย์ลำดับวันที่จ่ายแล้ว เช่น [1,2,5]
+-- ============================================================================
+create table if not exists public.daily_loans (
+  id            uuid        primary key default gen_random_uuid(),
+
+  start_date    date,                                  -- วันเริ่มจ่าย
+  return_date   date,                                  -- วันครบกำหนด/วันคืน
+  name          text        not null,                  -- ชื่อผู้กู้
+  loan          bigint      not null default 0         -- เงินต้นที่ปล่อยกู้ (กีบ)
+                            check (loan >= 0),
+  pay           bigint      not null default 0         -- ยอดรวมที่ต้องรับคืน = loan × (1+%)
+                            check (pay >= 0),
+  daily_amount  bigint      not null default 0         -- ยอดจ่ายต่อวัน (auto = pay / days)
+                            check (daily_amount >= 0),
+  days          int         not null default 0         -- จำนวนวัน (auto = วันคืน − วันเริ่ม)
+                            check (days >= 0),
+  paid_days     jsonb       not null default '[]'::jsonb, -- ลำดับวันที่จ่ายแล้ว เช่น [1,2,5]
+  note          text,
+
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
+-- ถ้าเคยสร้างตารางเวอร์ชันก่อน (ไม่มี pay/return_date) ให้เพิ่มคอลัมน์:
+alter table public.daily_loans add column if not exists return_date date;
+alter table public.daily_loans add column if not exists pay bigint not null default 0;
+
+comment on table  public.daily_loans is 'แผนผ่อนรายวัน · ยอด/วัน × จำนวนวัน · ติ๊กจ่ายทีละวัน';
+
+create index if not exists daily_loans_name_idx       on public.daily_loans (name);
+create index if not exists daily_loans_start_date_idx on public.daily_loans (start_date);
+
+drop trigger if exists daily_loans_set_updated_at on public.daily_loans;
+create trigger daily_loans_set_updated_at
+  before update on public.daily_loans
+  for each row execute function public.set_updated_at();
+
+alter table public.daily_loans enable row level security;
+
+drop policy if exists "daily_loans_public_all" on public.daily_loans;
+create policy "daily_loans_public_all"
+  on public.daily_loans
+  for all
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+-- ============================================================================
 --  Row Level Security (RLS)
 -- ----------------------------------------------------------------------------
 --  ค่าเริ่มต้น: อนุญาตให้ทุกคนที่มี anon key อ่าน/เขียนได้

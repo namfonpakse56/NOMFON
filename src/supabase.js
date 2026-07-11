@@ -82,3 +82,80 @@ export async function setPaid(id, paid) {
   if (error) throw error
   return fromRow(data)
 }
+
+// ---- daily_loans: แผนผ่อนรายวัน (จ่ายทีละวัน) --------------------------------
+const DAILY_TABLE = 'daily_loans'
+
+function fromDailyRow(r) {
+  return {
+    id: r.id,
+    startDate: isoToDMY(r.start_date) || '-',
+    returnDate: isoToDMY(r.return_date) || '-',
+    name: r.name,
+    loan: r.loan || 0,
+    pay: r.pay || 0,
+    dailyAmount: r.daily_amount || 0,
+    days: r.days || 0,
+    paidDays: Array.isArray(r.paid_days) ? r.paid_days : [],
+  }
+}
+function toDailyRow(rec) {
+  return {
+    start_date: dmyToISO(rec.startDate) || null,
+    return_date: dmyToISO(rec.returnDate) || null,
+    name: rec.name,
+    loan: rec.loan || 0,
+    pay: rec.pay || 0,
+    daily_amount: rec.dailyAmount || 0,
+    days: rec.days || 0,
+    paid_days: Array.isArray(rec.paidDays) ? rec.paidDays : [],
+  }
+}
+
+export async function fetchDailyLoans() {
+  const { data, error } = await supabase
+    .from(DAILY_TABLE)
+    .select('*')
+    .order('start_date', { ascending: true })
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return (data || []).map(fromDailyRow)
+}
+
+export async function insertDailyLoan(rec) {
+  const { data, error } = await supabase
+    .from(DAILY_TABLE)
+    .insert(toDailyRow(rec))
+    .select()
+    .single()
+  if (error) throw error
+  return fromDailyRow(data)
+}
+
+export async function updateDailyLoan(id, rec) {
+  const { data, error } = await supabase
+    .from(DAILY_TABLE)
+    .update(toDailyRow(rec))
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return fromDailyRow(data)
+}
+
+export async function deleteDailyLoan(id) {
+  const { error } = await supabase.from(DAILY_TABLE).delete().eq('id', id)
+  if (error) throw error
+}
+
+// อัปเดตเฉพาะรายการวันที่จ่ายแล้ว (ติ๊ก/ยกเลิกทีละวัน)
+export async function setDailyPaidDays(id, paidDays) {
+  const { data, error } = await supabase
+    .from(DAILY_TABLE)
+    .update({ paid_days: paidDays })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return fromDailyRow(data)
+}
