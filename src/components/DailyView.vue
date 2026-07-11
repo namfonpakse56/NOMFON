@@ -96,7 +96,7 @@ const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radi
           <button
             v-for="c in pl.dayCells"
             :key="c.n"
-            :title="'ວັນທີ ' + c.n + (c.paid ? ' · ຈ່າຍແລ້ວ' : ' · ຍັງບໍ່ຈ່າຍ')"
+            :title="'ວັນທີ ' + c.dateStr + (c.paid ? ' · ຈ່າຍແລ້ວ' : ' · ຍັງບໍ່ຈ່າຍ')"
             :style="
               'width:38px;height:38px;border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums;transition:all .12s;' +
               (c.paid
@@ -105,7 +105,7 @@ const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radi
             "
             @click="$emit('toggle-day', pl.id, c.n)"
           >
-            {{ c.n }}
+            {{ c.label }}
           </button>
         </div>
       </div>

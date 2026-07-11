@@ -486,7 +486,17 @@ const dailyVals = computed(() => {
       paidCount,
       progressPct: days ? Math.round((paidCount / days) * 100) : 0,
       done,
-      dayCells: Array.from({ length: days }, (_, i) => ({ n: i + 1, paid: paidSet.has(i + 1) })),
+      // n = ลำดับวัน (ใช้กับ paidDays), label/dateStr = วันที่จริงตามปฏิทิน (เริ่ม + i วัน)
+      dayCells: Array.from({ length: days }, (_, i) => {
+        const base = parseDMY(e.startDate)
+        const d = base ? new Date(base.getFullYear(), base.getMonth(), base.getDate() + i) : null
+        return {
+          n: i + 1,
+          paid: paidSet.has(i + 1),
+          label: d ? d.getDate() : i + 1,
+          dateStr: d ? `${d.getDate()}/${d.getMonth() + 1}` : String(i + 1),
+        }
+      }),
     }
     let g = byPerson[e.name]
     if (!g) {
