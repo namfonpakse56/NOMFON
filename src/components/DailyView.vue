@@ -46,9 +46,15 @@ const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radi
               </div>
             </div>
           </div>
-          <div style="text-align:right">
-            <div style="font-size:11px;color:#8a897f;font-weight:600">ຕ້ອງຮັບຄืນລວມ</div>
-            <div style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">{{ p.totalStr }}</div>
+          <div style="display:flex;gap:22px;text-align:right">
+            <div>
+              <div style="font-size:11px;color:#8a897f;font-weight:600">ປ່ອຍກູ້</div>
+              <div style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums">{{ p.loanStr }}</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#8a897f;font-weight:600">ຕ້ອງຮັບຄืນລວມ</div>
+              <div style="font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:#155">{{ p.totalStr }}</div>
+            </div>
           </div>
         </div>
         <!-- ແຖບຄວາມคืบหน้ารวมของคนนี้ -->
@@ -69,7 +75,7 @@ const ACTION_BTN = 'border:1px solid rgba(0,0,0,.12);background:#fff;border-radi
       >
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
           <div style="font-size:12.5px;color:#6b6a62;font-variant-numeric:tabular-nums">
-            {{ pl.startDate }} → {{ pl.returnDate }} · {{ pl.dailyStr }}/ວັນ × {{ pl.days }} ວັນ
+            {{ pl.startDate }} → {{ pl.returnDate }} · ປ່ອຍກູ້ {{ pl.loanStr }} · {{ pl.dailyStr }}/ວັນ × {{ pl.days }} ວັນ
           </div>
           <div style="display:flex;align-items:center;gap:10px">
             <span

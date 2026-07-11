@@ -350,6 +350,23 @@ const vals = computed(() => {
   const sumReturn = filtered.reduce((a, e) => a + e.pay, 0)
   const pending = filtered.filter((e) => !e.paid).length
 
+  // ยอดของแผนรายวัน (กรองด้วยวันเริ่มเหมือนกัน) เพื่อรวมเข้ากับสรุปหัวเว็บ
+  const dailyFiltered = (dailyEntries.value || []).filter((e) => {
+    const d = parseDMY(e.startDate)
+    if (!d) return true
+    if (sd && d < sd) return false
+    if (ed && d > ed) return false
+    return true
+  })
+  const dailyLoan = dailyFiltered.reduce((a, e) => a + (e.loan || 0), 0)
+  const dailyReturn = dailyFiltered.reduce(
+    (a, e) => a + (e.pay || (e.dailyAmount || 0) * (e.days || 0)),
+    0,
+  )
+  // สรุปหัวเว็บ = เงินกู้ครั้งเดียว + เงินรายวัน
+  const headLoan = sumLoan + dailyLoan
+  const headReturn = sumReturn + dailyReturn
+
   const rows = filtered.map((e) => ({
     id: e.id,
     borrowDate: e.borrowDate,
@@ -404,6 +421,10 @@ const vals = computed(() => {
     sumLoanStr: fmt(sumLoan),
     sumReturnStr: fmt(sumReturn),
     sumProfitStr: fmt(sumReturn - sumLoan),
+    // สรุปหัวเว็บ = รวมเงินกู้ครั้งเดียว + เงินรายวัน
+    headLoanStr: fmt(headLoan),
+    headReturnStr: fmt(headReturn),
+    headProfitStr: fmt(headReturn - headLoan),
     countStr: filtered.length,
     pendingStr: pending,
     isFiltered,
@@ -457,6 +478,7 @@ const dailyVals = computed(() => {
       startDate: e.startDate,
       returnDate: e.returnDate,
       days,
+      loanStr: fmt(e.loan || 0),
       dailyStr: fmt(daily),
       totalStr: fmt(total) + ' ກີບ',
       collectedStr: fmt(collected) + ' ກີບ',
@@ -471,6 +493,7 @@ const dailyVals = computed(() => {
       g = byPerson[e.name] = {
         name: e.name,
         initial: e.name.replace(/^(ອ້າຍ|ເອື້ອຍ)/, '').trim().charAt(0) || e.name.charAt(0),
+        loan: 0,
         total: 0,
         collected: 0,
         done: 0,
@@ -478,13 +501,14 @@ const dailyVals = computed(() => {
       }
       order.push(g)
     }
+    g.loan += e.loan || 0
     g.total += total
     g.collected += collected
     if (done) g.done += 1
     g.plans.push(plan)
   })
 
-  // ການ์ດແຍກຕາມລາຍບຸກຄົນ (ຮຽງຕາມຍังเหลือຫຼາຍ→ໜ້ອຍ)
+  // ການ์ດແຍກຕາມລາຍບຸກຄົນ — ຮຽງຕາມຊື່ (ຄงที่ ไม่ขยับเวลาติ๊กวัน)
   const people = order
     .map((g) => {
       const remaining = g.total - g.collected
@@ -494,15 +518,15 @@ const dailyVals = computed(() => {
         count: g.plans.length,
         doneCount: g.done,
         allDone: g.done >= g.plans.length,
+        loanStr: fmt(g.loan) + ' ກີບ',
         totalStr: fmt(g.total) + ' ກີບ',
         collectedStr: fmt(g.collected) + ' ກີບ',
         remainingStr: fmt(remaining) + ' ກີບ',
         progressPct: g.total ? Math.round((g.collected / g.total) * 100) : 0,
         plans: g.plans,
-        _remaining: remaining,
       }
     })
-    .sort((a, b) => b._remaining - a._remaining)
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   return {
     accent,
