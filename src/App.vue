@@ -127,6 +127,8 @@ function switchMode(t) {
 
 function openEdit(e) {
   editId.value = e.id
+  dailyEditId.value = null
+  formType.value = 'lump' // ບັງຄັບໃຫ້ເປີດຟอร์มແบບ "ຈ່າຍຄັ້ງດຽວ" — ກັນເປີດຜິດ modal ແລ້ວ insert ຊ້ຳ
   Object.assign(form, {
     borrowDate: e.borrowDate,
     name: e.name,
