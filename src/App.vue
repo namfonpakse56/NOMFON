@@ -29,6 +29,7 @@ const entries = ref(null)
 const dailyEntries = ref(null) // แผนจ่ายรายวัน (daily_loans)
 const view = ref('all') // 'all' | 'names' | 'daily'
 const selectedName = ref(null)
+const searchName = ref('') // ຄົ້ນຫາ ຊື່ຜູ້ກູ້ (ໃຊ້ຮ່ວມກັນທຸກໜ້າ)
 const showForm = ref(false)
 const formType = ref('lump') // 'lump' = จ่ายครั้งเดียว | 'daily' = จ่ายรายวัน
 const editId = ref(null)
@@ -310,6 +311,7 @@ function showDaily() {
 function onName(name) {
   view.value = 'names'
   selectedName.value = name
+  searchName.value = name // ໃສ່ຊື່ໃນກ່ອງຄົ້ນຫາໃຫ້ອັດຕະໂນມັດ
 }
 function setToday() {
   const t = new Date()
@@ -336,9 +338,11 @@ function clearFilter() {
 const vals = computed(() => {
   const accent = props.accentColor ?? '#1f6b4c'
   const allEntries = entries.value || []
+  const q = (searchName.value || '').trim().toLowerCase()
   const sd = start.value ? new Date(start.value + 'T00:00:00') : null
   const ed = end.value ? new Date(end.value + 'T23:59:59') : null
   const filtered = allEntries.filter((e) => {
+    if (q && !(e.name || '').toLowerCase().includes(q)) return false
     const d = parseDMY(e.borrowDate)
     if (!d) return true
     if (sd && d < sd) return false
@@ -352,6 +356,7 @@ const vals = computed(() => {
 
   // ยอดของแผนรายวัน (กรองด้วยวันเริ่มเหมือนกัน) เพื่อรวมเข้ากับสรุปหัวเว็บ
   const dailyFiltered = (dailyEntries.value || []).filter((e) => {
+    if (q && !(e.name || '').toLowerCase().includes(q)) return false
     const d = parseDMY(e.startDate)
     if (!d) return true
     if (sd && d < sd) return false
@@ -445,9 +450,11 @@ const vals = computed(() => {
 const dailyVals = computed(() => {
   const accent = props.accentColor ?? '#1f6b4c'
   const all = dailyEntries.value || []
+  const q = (searchName.value || '').trim().toLowerCase()
   const sd = start.value ? new Date(start.value + 'T00:00:00') : null
   const ed = end.value ? new Date(end.value + 'T23:59:59') : null
   const filtered = all.filter((e) => {
+    if (q && !(e.name || '').toLowerCase().includes(q)) return false
     const d = parseDMY(e.startDate)
     if (!d) return true
     if (sd && d < sd) return false
@@ -647,8 +654,10 @@ function editById(id) {
         :vals="vals"
         :start="start"
         :end="end"
+        :search="searchName"
         @update-start="start = $event"
         @update-end="end = $event"
+        @update-search="searchName = $event"
         @today="setToday"
         @month="setMonth"
         @year="setYear"
@@ -664,7 +673,7 @@ function editById(id) {
         @toggle="toggle"
       />
 
-      <ByNameView v-if="vals.isNameList" :vals="vals" />
+      <ByNameView v-if="vals.isNameList" :vals="vals" :search="searchName" />
 
       <DailyView
         v-if="vals.isDaily"

@@ -1,5 +1,8 @@
 <script setup>
-defineProps({ vals: { type: Object, required: true } })
+defineProps({
+  vals: { type: Object, required: true },
+  search: { type: String, default: '' },
+})
 
 const TH = 'text-align:left;padding:11px 20px;font-size:12px;font-weight:700;color:#5a4a24'
 const TH_R = 'text-align:right;padding:11px 20px;font-size:12px;font-weight:700;color:#5a4a24'
@@ -8,6 +11,15 @@ const TH_C = 'text-align:center;padding:11px 20px;font-size:12px;font-weight:700
 
 <template>
   <div style="display:flex;flex-direction:column;gap:20px">
+    <!-- ບໍ່ພົບຜົນການຄົ້ນຫາ / ບໍ່ມີຂໍ້ມູນ -->
+    <div
+      v-if="!vals.people.length"
+      style="background:#fff;border:1px dashed rgba(0,0,0,.14);border-radius:16px;padding:36px 22px;text-align:center;color:#8a897f;font-size:14px;font-weight:600"
+    >
+      <template v-if="search">ບໍ່ພົບ "{{ search }}"</template>
+      <template v-else>ຍັງບໍ່ມີຂໍ້ມູນ</template>
+    </div>
+
     <div
       v-for="p in vals.people"
       :key="p.name"
