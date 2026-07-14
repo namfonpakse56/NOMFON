@@ -9,6 +9,7 @@ const props = defineProps({
   form: { type: Object, required: true },
   title: { type: String, required: true },
   canSwitch: { type: Boolean, default: false },
+  saving: { type: Boolean, default: false },
 })
 defineEmits(['field', 'save', 'close', 'switch'])
 
@@ -111,10 +112,11 @@ const SEG_OFF = SEG + ';background:transparent;color:#6b6a62'
       <div class="fm-foot" style="padding:16px 26px;background:#f8f6f0;border-top:1px solid rgba(0,0,0,.06);display:flex;gap:12px;justify-content:flex-end">
         <button style="border:1px solid rgba(0,0,0,.14);background:#fff;border-radius:10px;padding:11px 20px;font-size:13.5px;font-weight:600;cursor:pointer" @click="$emit('close')">ຍົກເລີກ</button>
         <button
-          :style="'border:none;color:#fff;border-radius:10px;padding:11px 24px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(31,107,76,.28);background:' + vals.accent"
+          :disabled="saving"
+          :style="'border:none;color:#fff;border-radius:10px;padding:11px 24px;font-size:13.5px;font-weight:700;box-shadow:0 2px 8px rgba(31,107,76,.28);background:' + vals.accent + (saving ? ';opacity:.6;cursor:default' : ';cursor:pointer')"
           @click="$emit('save')"
         >
-          ບັນທຶກ
+          {{ saving ? 'ກຳລັງบັนທຶກ…' : 'ບັນທຶກ' }}
         </button>
       </div>
     </div>

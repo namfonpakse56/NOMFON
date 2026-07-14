@@ -161,6 +161,7 @@ function closeForm() {
 }
 
 async function saveForm() {
+  if (saving.value) return // ກັນກົດ "ບັນທຶກ" ຊ້ຳ (double-tap) → insert ຊ້ຳ
   const loan = parseNum(form.loan)
   const pct = parseNum(form.pct)
   const pay = Math.round(loan * (1 + pct / 100))
@@ -225,6 +226,7 @@ async function toggle(id) {
 
 // ---- daily actions ----
 async function saveDailyForm() {
+  if (saving.value) return // ກັນກົດ "ບັນທຶກ" ຊ້ຳ (double-tap) → insert ຊ້ຳ
   const loan = parseNum(dailyForm.loan)
   const pct = parseNum(dailyForm.pct)
   const pay = Math.round(loan * (1 + pct / 100)) // ยอดรวมที่ต้องรับคืน
@@ -693,6 +695,7 @@ function editById(id) {
       :form="form"
       :title="title"
       :can-switch="!editId"
+      :saving="saving"
       @field="setField"
       @save="saveForm"
       @close="closeForm"
@@ -705,6 +708,7 @@ function editById(id) {
       :form="dailyForm"
       :title="dailyTitle"
       :can-switch="!dailyEditId"
+      :saving="saving"
       @field="setDailyField"
       @save="saveDailyForm"
       @close="closeForm"
