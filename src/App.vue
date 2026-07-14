@@ -164,7 +164,7 @@ async function saveForm() {
   if (saving.value) return // ກັນກົດ "ບັນທຶກ" ຊ້ຳ (double-tap) → insert ຊ້ຳ
   const loan = parseNum(form.loan)
   const pct = parseNum(form.pct)
-  const pay = Math.round(loan * (1 + pct / 100))
+  const pay = roundKip(loan * (1 + pct / 100)) // ປັດຂຶ້ນເປັນ 500 ກີບ
   if (!form.name.trim() || !loan) {
     closeForm()
     return
@@ -229,7 +229,7 @@ async function saveDailyForm() {
   if (saving.value) return // ກັນກົດ "ບັນທຶກ" ຊ້ຳ (double-tap) → insert ຊ້ຳ
   const loan = parseNum(dailyForm.loan)
   const pct = parseNum(dailyForm.pct)
-  const pay = Math.round(loan * (1 + pct / 100)) // ยอดรวมที่ต้องรับคืน
+  const pay = roundKip(loan * (1 + pct / 100)) // ยอดรวมที่ต้องรับคืน (ปัดขึ้น 500 กีบ)
   const days = daysBetween(dailyForm.startDate, dailyForm.returnDate) // auto จากช่วงวันที่
   const dailyAmount = days > 0 ? roundKip(pay / days) : 0 // auto ยอดจ่าย/วัน (ปัดขึ้น 500 กีบ)
   if (!dailyForm.name.trim() || !loan || !days) {
@@ -421,7 +421,7 @@ const vals = computed(() => {
     })
     .sort((a, b) => b.countStr - a.countStr)
 
-  const computedPay = parseNum(form.loan) * (1 + parseNum(form.pct) / 100)
+  const computedPay = roundKip(parseNum(form.loan) * (1 + parseNum(form.pct) / 100)) // ปัดขึ้น 500 กีบ
 
   return {
     accent,

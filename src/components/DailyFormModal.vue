@@ -22,7 +22,7 @@ function fmtNum(v) {
 // ---- คำนวณอัตโนมัติจาก เงินต้น + % + วันเริ่ม + วันคืน ----
 const loan = computed(() => parseNum(props.form.loan))
 const pct = computed(() => parseNum(props.form.pct))
-const pay = computed(() => Math.round(loan.value * (1 + pct.value / 100))) // ยอดรวมที่ต้องรับคืน
+const pay = computed(() => roundKip(loan.value * (1 + pct.value / 100))) // ยอดรวมที่ต้องรับคืน (ปัดขึ้น 500 กีบ)
 const days = computed(() => daysBetween(props.form.startDate, props.form.returnDate))
 // ปัดยอด/วัน ขึ้นเป็นทวีคูณของ 500 กีบ (เศษที่เหลือไปตกวันสุดท้าย)
 const dailyAmount = computed(() => (days.value > 0 ? roundKip(pay.value / days.value) : 0))
