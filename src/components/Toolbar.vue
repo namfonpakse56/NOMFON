@@ -1,7 +1,10 @@
 <script setup>
 import Icon from './Icon.vue'
-defineProps({ vals: { type: Object, required: true } })
-defineEmits(['show-all', 'show-by-name', 'show-daily', 'open-new'])
+defineProps({
+  vals: { type: Object, required: true },
+  pv: { type: Object, required: true }, // ຄ່າສະຫຼຸບຂອງໜ້າ "ຈ່າຍແລ້ວ"
+})
+defineEmits(['show-all', 'show-by-name', 'show-daily', 'show-paid', 'open-new'])
 
 const TAB_BASE =
   'border:none;padding:9px 18px;border-radius:9px;font-size:13.5px;font-weight:700;cursor:pointer;transition:all .12s;'
@@ -21,13 +24,19 @@ const TAB_OFF = TAB_BASE + 'background:transparent;color:#6b6a62;'
       <button :style="vals.isDaily ? TAB_ON : TAB_OFF" @click="$emit('show-daily')">
         <span style="display:inline-flex;align-items:center;gap:5px"><Icon name="coins" :size="14" /> ຈ່າຍລາຍວັນ</span>
       </button>
+      <button :style="vals.isPaid ? TAB_ON : TAB_OFF" @click="$emit('show-paid')">
+        <span style="display:inline-flex;align-items:center;gap:5px"><Icon name="check-circle" :size="14" /> ຈ່າຍແລ້ວ</span>
+      </button>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
-      <div v-if="vals.isDaily" style="font-size:12.5px;color:#6b6a62;font-weight:500">
-        ທັງໝົດ {{ vals.dailyCountStr }} ແຜນ · ຍັງບໍ່ຄົບ {{ vals.dailyPendingStr }}
+      <div v-if="vals.isPaid" style="font-size:12.5px;color:#6b6a62;font-weight:500">
+        ຈ່າຍແລ້ວ {{ pv.countStr }} ລາຍການ · {{ pv.peopleCountStr }} ຄົນ
+      </div>
+      <div v-else-if="vals.isDaily" style="font-size:12.5px;color:#6b6a62;font-weight:500">
+        ຍັງບໍ່ຄົບ {{ vals.dailyCountStr }} ແຜນ
       </div>
       <div v-else style="font-size:12.5px;color:#6b6a62;font-weight:500">
-        ທັງໝົດ {{ vals.countStr }} ລາຍການ · ຄ້າງຈ່າຍ {{ vals.pendingStr }}
+        ຄ້າງຈ່າຍ {{ vals.countStr }} ລາຍການ
       </div>
       <button
         :style="'color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(31,107,76,.28);display:inline-flex;align-items:center;gap:6px;background:' + vals.accent"

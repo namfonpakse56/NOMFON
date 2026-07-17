@@ -15,6 +15,7 @@ import DateFilter from './components/DateFilter.vue'
 import CombinedTable from './components/CombinedTable.vue'
 import ByNameView from './components/ByNameView.vue'
 import DailyView from './components/DailyView.vue'
+import PaidView from './components/PaidView.vue'
 import FormModal from './components/FormModal.vue'
 import DailyFormModal from './components/DailyFormModal.vue'
 import Icon from './components/Icon.vue'
@@ -27,7 +28,7 @@ const props = defineProps({
 // ---- state ----
 const entries = ref(null)
 const dailyEntries = ref(null) // แผนจ่ายรายวัน (daily_loans)
-const view = ref('all') // 'all' | 'names' | 'daily'
+const view = ref('all') // 'all' | 'names' | 'daily' | 'paid'
 const selectedName = ref(null)
 const searchName = ref('') // ຄົ້ນຫາ ຊື່ຜູ້ກູ້ (ໃຊ້ຮ່ວມກັນທຸກໜ້າ)
 const showForm = ref(false)
@@ -299,6 +300,15 @@ async function toggleDailyDay(id, day) {
   }
 }
 
+// ຄືນສະຖານະແຜນລາຍວັນ (ຈາກໜ້າ "ຈ່າຍແລ້ວ") — ຍົກເລີກມື້ສຸດທ້າຍ ແລ້ວກັບໄປໜ້າ "ຈ່າຍລາຍວັນ"
+async function reopenDaily(id) {
+  const cur = dailyEntries.value.find((e) => e.id === id)
+  if (!cur) return
+  const days = [...new Set(cur.paidDays || [])].filter((n) => n >= 1 && n <= (cur.days || 0))
+  if (!days.length) return
+  await toggleDailyDay(id, Math.max(...days))
+}
+
 // ---- tabs / filter handlers ----
 function showAll() {
   view.value = 'all'
@@ -310,6 +320,10 @@ function showByName() {
 }
 function showDaily() {
   view.value = 'daily'
+  selectedName.value = null
+}
+function showPaid() {
+  view.value = 'paid'
   selectedName.value = null
 }
 function onName(name) {
@@ -338,6 +352,14 @@ function clearFilter() {
   end.value = ''
 }
 
+// ແຜນລາຍວັນ "ຈ່າຍຄົບ" = ຕິ໊ກຄົບທຸກມື້ຂອງແຜນ
+function isDailyDone(e) {
+  const days = e.days || 0
+  if (!days) return false
+  const paidCount = [...new Set(e.paidDays || [])].filter((n) => n >= 1 && n <= days).length
+  return paidCount >= days
+}
+
 // ---- ຄ່າທີ່ຄິດໄລ່ (derived) ----
 const vals = computed(() => {
   const accent = props.accentColor ?? '#1f6b4c'
@@ -354,13 +376,16 @@ const vals = computed(() => {
     return true
   })
   const isFiltered = !!(sd || ed)
-  const sumLoan = filtered.reduce((a, e) => a + e.loan, 0)
-  const sumReturn = filtered.reduce((a, e) => a + e.pay, 0)
-  const pending = filtered.filter((e) => !e.paid).length
+  // ລາຍການທີ່ຈ່າຍແລ້ວ ຍ້າຍໄປໜ້າ "ຈ່າຍແລ້ວ" — 3 ໜ້ານີ້ສະແດງສະເພາະທີ່ຍັງຄ້າງຈ່າຍ
+  const active = filtered.filter((e) => !e.paid)
+  const sumLoan = active.reduce((a, e) => a + e.loan, 0)
+  const sumReturn = active.reduce((a, e) => a + e.pay, 0)
 
   // ยอดของแผนรายวัน (กรองด้วยวันเริ่มเหมือนกัน) เพื่อรวมเข้ากับสรุปหัวเว็บ
+  // แผนที่ติ๊กครบทุกวันแล้ว = จ่ายแล้ว → ย้ายไปหน้า "ຈ່າຍແລ້ວ" ไม่นับรวมที่นี่
   const dailyFiltered = (dailyEntries.value || []).filter((e) => {
     if (q && !(e.name || '').toLowerCase().includes(q)) return false
+    if (isDailyDone(e)) return false
     const d = parseDMY(e.startDate)
     if (!d) return true
     if (sd && d < sd) return false
@@ -376,7 +401,7 @@ const vals = computed(() => {
   const headLoan = sumLoan + dailyLoan
   const headReturn = sumReturn + dailyReturn
 
-  const rows = filtered.map((e) => ({
+  const rows = active.map((e) => ({
     id: e.id,
     borrowDate: e.borrowDate,
     name: e.name,
@@ -392,7 +417,7 @@ const vals = computed(() => {
 
   // ຈັດກຸ່ມຕາມຊື່
   const map = {}
-  filtered.forEach((e) => {
+  active.forEach((e) => {
     ;(map[e.name] = map[e.name] || []).push(e)
   })
   const people = Object.keys(map)
@@ -434,16 +459,13 @@ const vals = computed(() => {
     headLoanStr: fmt(headLoan),
     headReturnStr: fmt(headReturn),
     headProfitStr: fmt(headReturn - headLoan),
-    countStr: filtered.length,
-    pendingStr: pending,
+    countStr: active.length,
     isFiltered,
     isAll: view.value === 'all',
     isNameList: view.value === 'names',
     isDaily: view.value === 'daily',
-    dailyCountStr: (dailyEntries.value || []).length,
-    dailyPendingStr: (dailyEntries.value || []).filter(
-      (e) => (e.paidDays || []).length < e.days,
-    ).length,
+    isPaid: view.value === 'paid',
+    dailyCountStr: (dailyEntries.value || []).filter((e) => !isDailyDone(e)).length,
     rows,
     people,
     computedPayStr: fmt(computedPay) + ' ກີບ',
@@ -459,6 +481,7 @@ const dailyVals = computed(() => {
   const ed = end.value ? new Date(end.value + 'T23:59:59') : null
   const filtered = all.filter((e) => {
     if (q && !(e.name || '').toLowerCase().includes(q)) return false
+    if (isDailyDone(e)) return false // ຕິ໊ກຄົບແລ້ວ → ຍ້າຍໄປໜ້າ "ຈ່າຍແລ້ວ"
     const d = parseDMY(e.startDate)
     if (!d) return true
     if (sd && d < sd) return false
@@ -558,6 +581,123 @@ const dailyVals = computed(() => {
   }
 })
 
+// ---- ໜ້າ "ຈ່າຍແລ້ວ" — ລວມລາຍການທີ່ຈ່າຍຄົບ (ຄັ້ງດຽວ + ລາຍວັນ) ຈັດກຸ່ມຕາມຊື່ດຽວກັນ ----
+const paidVals = computed(() => {
+  const accent = props.accentColor ?? '#1f6b4c'
+  const q = (searchName.value || '').trim().toLowerCase()
+  const sd = start.value ? new Date(start.value + 'T00:00:00') : null
+  const ed = end.value ? new Date(end.value + 'T23:59:59') : null
+  const keep = (name, dmy) => {
+    if (q && !(name || '').toLowerCase().includes(q)) return false
+    const d = parseDMY(dmy)
+    if (!d) return true
+    if (sd && d < sd) return false
+    if (ed && d > ed) return false
+    return true
+  }
+  // ຈັບຄູ່ຊື່ທີ່ຄືກັນ — ຕັດຊ່ອງວ່າງຫົວ/ທ້າຍ, ຍຸບຊ່ອງວ່າງຊ້ຳ, ບໍ່ສົນໂຕພິມໃຫຍ່/ນ້ອຍ
+  const keyOf = (n) => (n || '').trim().replace(/\s+/g, ' ').toLowerCase()
+  const groups = new Map()
+  const groupFor = (name) => {
+    const k = keyOf(name)
+    let g = groups.get(k)
+    if (!g) {
+      const display = (name || '').trim()
+      g = {
+        key: k,
+        name: display,
+        initial: display.replace(/^(ອ້າຍ|ເອື້ອຍ)/, '').trim().charAt(0) || display.charAt(0),
+        loan: 0,
+        pay: 0,
+        lumpCount: 0,
+        dailyCount: 0,
+        rows: [],
+      }
+      groups.set(k, g)
+    }
+    return g
+  }
+
+  ;(entries.value || [])
+    .filter((e) => e.paid && keep(e.name, e.borrowDate))
+    .forEach((e) => {
+      const g = groupFor(e.name)
+      g.loan += e.loan || 0
+      g.pay += e.pay || 0
+      g.lumpCount += 1
+      g.rows.push({
+        key: 'l' + e.id,
+        id: e.id,
+        isDaily: false,
+        pctStr: pctOf(e) + '%',
+        days: 0,
+        startDate: e.borrowDate,
+        returnDate: e.returnDate,
+        loanStr: fmt2(e.loan || 0),
+        payStr: fmt2(e.pay || 0),
+        sortAt: parseDMY(e.returnDate)?.getTime() ?? 0,
+      })
+    })
+
+  ;(dailyEntries.value || [])
+    .filter((e) => isDailyDone(e) && keep(e.name, e.startDate))
+    .forEach((e) => {
+      const total = e.pay || (e.dailyAmount || 0) * (e.days || 0)
+      const g = groupFor(e.name)
+      g.loan += e.loan || 0
+      g.pay += total
+      g.dailyCount += 1
+      g.rows.push({
+        key: 'd' + e.id,
+        id: e.id,
+        isDaily: true,
+        pctStr: pctOf({ loan: e.loan, pay: total }) + '%',
+        days: e.days || 0,
+        startDate: e.startDate,
+        returnDate: e.returnDate,
+        loanStr: fmt2(e.loan || 0),
+        payStr: fmt2(total),
+        sortAt: parseDMY(e.returnDate)?.getTime() ?? 0,
+      })
+    })
+
+  const people = [...groups.values()]
+    .map((g) => {
+      const rows = [...g.rows].sort((a, b) => a.sortAt - b.sortAt)
+      return {
+        key: g.key,
+        name: g.name,
+        initial: g.initial,
+        loan: g.loan,
+        pay: g.pay,
+        countStr: rows.length,
+        lumpCount: g.lumpCount,
+        dailyCount: g.dailyCount,
+        loanStr: fmt(g.loan),
+        payStr: fmt(g.pay),
+        profitStr: fmt(g.pay - g.loan),
+        loanTot2: fmt2(g.loan),
+        payTot2: fmt2(g.pay),
+        lastReturn: rows.length ? rows[rows.length - 1].returnDate : '',
+        rows,
+      }
+    })
+    .sort((a, b) => b.countStr - a.countStr || a.name.localeCompare(b.name))
+
+  const sumLoan = people.reduce((a, p) => a + p.loan, 0)
+  const sumPay = people.reduce((a, p) => a + p.pay, 0)
+
+  return {
+    accent,
+    people,
+    countStr: people.reduce((a, p) => a + p.countStr, 0),
+    peopleCountStr: people.length,
+    sumLoanStr: fmt(sumLoan),
+    sumPayStr: fmt(sumPay),
+    sumProfitStr: fmt(sumPay - sumLoan),
+  }
+})
+
 const title = computed(() => (editId.value ? 'ແກ້ໄຂລາຍການກູ້' : 'ເພີ່ມລາຍການກູ້ໃໝ່'))
 const dailyTitle = computed(() =>
   dailyEditId.value ? 'ແກ້ໄຂແຜນຈ່າຍລາຍວັນ' : 'ເພີ່ມແຜນຈ່າຍລາຍວັນ',
@@ -648,9 +788,11 @@ function editById(id) {
     <div class="dash-wrap" style="max-width:1240px;margin:22px auto 0;padding:0 40px">
       <Toolbar
         :vals="vals"
+        :pv="paidVals"
         @show-all="showAll"
         @show-by-name="showByName"
         @show-daily="showDaily"
+        @show-paid="showPaid"
         @open-new="openNew"
       />
 
@@ -686,6 +828,14 @@ function editById(id) {
         @edit="openDailyEdit(dailyEntries.find((e) => e.id === $event))"
         @delete="delDaily"
         @toggle-day="toggleDailyDay"
+      />
+
+      <PaidView
+        v-if="vals.isPaid"
+        :pv="paidVals"
+        :search="searchName"
+        @unpay="toggle"
+        @reopen-daily="reopenDaily"
       />
     </div>
 

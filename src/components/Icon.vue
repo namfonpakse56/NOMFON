@@ -79,6 +79,10 @@ defineProps({
     <template v-else-if="name === 'search'">
       <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </template>
+    <template v-else-if="name === 'check-circle'">
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="8.5 12.2 11 14.7 15.8 9.5" />
+    </template>
     <template v-else-if="name === 'calendar-check'">
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" />
