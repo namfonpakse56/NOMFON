@@ -300,6 +300,13 @@ async function toggleDailyDay(id, day) {
   }
 }
 
+// ລຶບຖາວອນຈາກໜ້າ "ຈ່າຍແລ້ວ" — ແຍກ table ຕາມ isDaily (ຄັ້ງດຽວ = loans · ລາຍວັນ = daily_loans)
+async function deletePaid(id, isDaily) {
+  if (!window.confirm('ລຶບລາຍການນີ້ຖາວອນ? ບໍ່ສາມາດກູ້ຄືນໄດ້')) return
+  if (isDaily) await delDaily(id)
+  else await del(id)
+}
+
 // ຄືນສະຖານະແຜນລາຍວັນ (ຈາກໜ້າ "ຈ່າຍແລ້ວ") — ຍົກເລີກມື້ສຸດທ້າຍ ແລ້ວກັບໄປໜ້າ "ຈ່າຍລາຍວັນ"
 async function reopenDaily(id) {
   const cur = dailyEntries.value.find((e) => e.id === id)
@@ -836,6 +843,7 @@ function editById(id) {
         :search="searchName"
         @unpay="toggle"
         @reopen-daily="reopenDaily"
+        @delete="deletePaid"
       />
     </div>
 

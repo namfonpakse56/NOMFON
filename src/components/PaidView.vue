@@ -7,7 +7,8 @@ defineProps({
   search: { type: String, default: '' },
 })
 // unpay = ຄືນສະຖານະລາຍການຈ່າຍຄັ້ງດຽວ · reopen-daily = ຄືນສະຖານະແຜນລາຍວັນ (ຍົກເລີກມື້ສຸດທ້າຍ)
-defineEmits(['unpay', 'reopen-daily'])
+// delete = ລຶບລາຍການຖາວອນ (ສົ່ງ id + isDaily ໄປແຍກ table ທີ່ App.vue)
+defineEmits(['unpay', 'reopen-daily', 'delete'])
 
 const TH = 'text-align:left;padding:11px 20px;font-size:12px;font-weight:700;color:#5a4a24'
 const TH_R = 'text-align:right;padding:11px 20px;font-size:12px;font-weight:700;color:#5a4a24'
@@ -120,13 +121,22 @@ const TH_C = 'text-align:center;padding:11px 20px;font-size:12px;font-weight:700
                 </span>
               </td>
               <td style="padding:10px 20px;text-align:center">
-                <button
-                  style="border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:8px;height:30px;padding:0 11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:#7a6428;font-size:12px;font-weight:700"
-                  :title="r.isDaily ? 'ຄືນສະຖານະ · ຍົກເລີກມື້ສຸດທ້າຍ ແລ້ວກັບໄປໜ້າຈ່າຍລາຍວັນ' : 'ຄືນສະຖານະ · ກັບໄປເປັນຄ້າງຈ່າຍ'"
-                  @click="$emit(r.isDaily ? 'reopen-daily' : 'unpay', r.id)"
-                >
-                  <Icon name="rotate" :size="13" /> ຄືນສະຖານະ
-                </button>
+                <div style="display:inline-flex;align-items:center;gap:8px">
+                  <button
+                    style="border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:8px;height:30px;padding:0 11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:#7a6428;font-size:12px;font-weight:700"
+                    :title="r.isDaily ? 'ຄືນສະຖານະ · ຍົກເລີກມື້ສຸດທ້າຍ ແລ້ວກັບໄປໜ້າຈ່າຍລາຍວັນ' : 'ຄືນສະຖານະ · ກັບໄປເປັນຄ້າງຈ່າຍ'"
+                    @click="$emit(r.isDaily ? 'reopen-daily' : 'unpay', r.id)"
+                  >
+                    <Icon name="rotate" :size="13" /> ຄືນສະຖານະ
+                  </button>
+                  <button
+                    style="border:1px solid rgba(179,73,47,.25);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#b3492f"
+                    title="ລຶບຖາວອນ"
+                    @click="$emit('delete', r.id, r.isDaily)"
+                  >
+                    <Icon name="trash" :size="15" />
+                  </button>
+                </div>
               </td>
             </tr>
             <tr style="background:#faf3e2;border-top:2px solid #d9c497;font-weight:800">
